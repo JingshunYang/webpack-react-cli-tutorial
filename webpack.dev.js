@@ -1,6 +1,7 @@
 const path = require("path")
 const EslintWebpackPlugin = require("eslint-webpack-plugin")
 const HtmlWebpackPlugin = require("html-webpack-plugin")
+const ReactRefreshPlugin = require("@pmmmwh/react-refresh-webpack-plugin")
 
 const getStyleLoaders = (pre) => {
   return [
@@ -65,7 +66,9 @@ module.exports = {
         options: {
           cacheDirectory: true,
           cacheCompression: false,
-
+          plugins: [
+            'react-refresh/babel', // 激活js的HMR功能
+          ],
         }
       }
     ],
@@ -80,6 +83,7 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, "./public/index.html"),
     }),
+    new ReactRefreshPlugin(), // 激活js的HMR功能
   ],
   mode: "development",
   devtool: 'cheap-module-source-map',
