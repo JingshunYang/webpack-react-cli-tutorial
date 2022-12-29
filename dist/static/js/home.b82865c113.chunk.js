@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunkwebpack_tutorial2=self.webpackChunkwebpack_tutorial2||[]).push([[177],{692:function(e,t,a){a.r(t);var u=a(294);t.default=function(){return u.createElement("h1",{className:"home-title"},"Home")}}}]);
+//# sourceMappingURL=home.b82865c113.chunk.js.map
