@@ -6,10 +6,13 @@ const CssMinimizerWebpackPlugin = require("css-minimizer-webpack-plugin")
 const TerserWebpackPlugin = require("terser-webpack-plugin")
 const ImageMinimizerPlugin = require("image-minimizer-webpack-plugin")
 const CopyPlugin = require("copy-webpack-plugin")
+const ReactRefreshPlugin = require("@pmmmwh/react-refresh-webpack-plugin")
+
+const isProduction = process.env.NODE_ENV === "production"
 
 const getStyleLoaders = (pre) => {
   return [
-    MiniCssExtractPlugin.loader,
+    isProduction ? MiniCssExtractPlugin.loader : "style-loader",
     "css-loader",
     {
       loader: "postcss-loader",
@@ -26,9 +29,9 @@ const getStyleLoaders = (pre) => {
 module.exports = {
   entry: "./src/main.js",
   output: {
-    path: path.resolve(__dirname, "./dist"),
-    filename: "static/js/[name].[contenthash:10].js",
-    chunkFilename: "static/js/[name].[contenthash:10].chunk.js",
+    path: isProduction ? path.resolve(__dirname, "./dist") : undefined,
+    filename: isProduction ? "static/js/[name].[contenthash:10].js" : "static/js/[name].js",
+    chunkFilename: isProduction ? "static/js/[name].[contenthash:10].chunk.js" : "static/js/[name].chunk.js",
     assetModuleFilename: "static/media/[hash:10][ext][query]",
   },
   module: {
@@ -54,7 +57,7 @@ module.exports = {
         type: "asset",
         parser: {
           dataUrlCondition: {
-            maxSize: 10 * 1024, 
+            maxSize: 10 * 1024,
           },
         },
       },
@@ -70,6 +73,9 @@ module.exports = {
         options: {
           cacheDirectory: true,
           cacheCompression: false,
+          plugins: [
+            !isProduction && 'react-refresh/babel', // 激活js的HMR功能
+          ].filter(Boolean),
         }
       }
     ],
@@ -84,25 +90,29 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, "./public/index.html"),
     }),
-    new MiniCssExtractPlugin({
-      filename: "static/css/[name].[contenthash:10].css",
-      chunkFilename: "static/css/[name].[contenthash:10].chunk.css",
-    }),
-    new CopyPlugin({
-      patterns: [
-        {
-          from: path.resolve(__dirname, "./public"),
-          to: path.resolve(__dirname, "./dist"),
-          globOptions: {
-            // 忽略index.html文件
-            ignore: ["**/index.html"],
+    isProduction &&
+      new MiniCssExtractPlugin({
+        filename: "static/css/[name].[contenthash:10].css",
+        chunkFilename: "static/css/[name].[contenthash:10].chunk.css",
+      }),
+    isProduction &&
+      new CopyPlugin({
+        patterns: [
+          {
+            from: path.resolve(__dirname, "./public"),
+            to: path.resolve(__dirname, "./dist"),
+            globOptions: {
+              // 忽略index.html文件
+              ignore: ["**/index.html"],
+            },
           },
-        },
-      ]
-    }),
-  ],
-  mode: "production",
-  devtool: 'source-map',
+        ]
+      }),
+    !isProduction &&
+      new ReactRefreshPlugin(), // 激活js的HMR功能
+  ].filter(Boolean),
+  mode: process.env.NODE_ENV,
+  devtool: isProduction ? 'source-map' : "cheap-module-source-map",
   optimization: {
     splitChunks: {
       chunks: 'all',
@@ -110,6 +120,7 @@ module.exports = {
     runtimeChunk: {
       name: entrypoint => `runtime~${entrypoint.name}.js`,
     },
+    minimize: isProduction,
     minimizer: [
       new CssMinimizerWebpackPlugin(),
       new TerserWebpackPlugin(),
@@ -118,9 +129,9 @@ module.exports = {
           implementation: ImageMinimizerPlugin.imageminGenerate,
           options: {
             plugins: [
-              ['gifsicle', {interlaced: true}],
-              ['jpegtran', {progressive: true}],
-              ['optipng', {optimizationLevel: 5}],
+              ['gifsicle', { interlaced: true }],
+              ['jpegtran', { progressive: true }],
+              ['optipng', { optimizationLevel: 5 }],
               [
                 "svgo",
                 {
@@ -144,12 +155,5 @@ module.exports = {
   },
   resolve: {
     extensions: [".jsx", ".js", ".json"],
-  },
-  devServer: {
-    host: "localhost",
-    port: 3000,
-    open: true,
-    hot: true,
-    historyApiFallback: true,
   },
 };
