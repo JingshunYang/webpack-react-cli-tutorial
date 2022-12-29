@@ -5,6 +5,7 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin")
 const CssMinimizerWebpackPlugin = require("css-minimizer-webpack-plugin")
 const TerserWebpackPlugin = require("terser-webpack-plugin")
 const ImageMinimizerPlugin = require("image-minimizer-webpack-plugin")
+const CopyPlugin = require("copy-webpack-plugin")
 
 const getStyleLoaders = (pre) => {
   return [
@@ -86,6 +87,18 @@ module.exports = {
     new MiniCssExtractPlugin({
       filename: "static/css/[name].[contenthash:10].css",
       chunkFilename: "static/css/[name].[contenthash:10].chunk.css",
+    }),
+    new CopyPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, "./public"),
+          to: path.resolve(__dirname, "./dist"),
+          globOptions: {
+            // 忽略index.html文件
+            ignore: ["**/index.html"],
+          },
+        },
+      ]
     }),
   ],
   mode: "production",
