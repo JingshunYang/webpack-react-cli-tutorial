@@ -122,7 +122,7 @@ module.exports = {
     !isProduction &&
       new ReactRefreshPlugin(), // 激活js的HMR功能
   ].filter(Boolean),
-  mode: process.env.NODE_ENV,
+  mode: isProduction ? "production" : "development",
   devtool: isProduction ? 'source-map' : "cheap-module-source-map",
   optimization: {
     splitChunks: {
@@ -187,4 +187,12 @@ module.exports = {
   resolve: {
     extensions: [".jsx", ".js", ".json"],
   },
+  devServer: {
+    host: "localhost",
+    port: 3000,
+    open: true,
+    hot: true,
+    historyApiFallback: true,
+  },
+  // performance: true,
 };
